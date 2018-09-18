@@ -447,6 +447,14 @@ Open the [JS Console](http://localhost:8000) and click Logout. For the email ent
 address and click `Log In`. Open your email and you should have a mail with a link which will
 authenticate you and bring you to the JS Console.
 
+Now let's add OTP to the mix. Open the [Keycloak Admin Console](http://localhost:8080/auth/admin/).
+Go back to the `Browser-email` flow. Click `Actions` and `Add execution`. Select `OTP Form`. Then
+mark it as `Required`.
+
+Open the [JS Console](http://localhost:8000) and click Logout. Login again. After you've done the
+email based login you will be prompted to configure OTP. You'll need Google Authenticator or
+FreeOTP on your phone to try this out.
+
 
 
 ## Cool stuff we didn't cover!
