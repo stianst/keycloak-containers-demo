@@ -85,28 +85,29 @@
 
     var kc = Keycloak();
 
-    kc.onAuthSuccess = function () {
-        event('Auth Success');
-    };
+    var updateProfile = function() {
+        var d = '<div style="text-align: center;">';
 
-    kc.onAuthError = function (errorData) {
-        event("Auth Error: " + JSON.stringify(errorData) );
-    };
+        if (kc.tokenParsed['avatar_url']) {
+            d += '<img src="' + kc.tokenParsed['avatar_url'] + '"></img><br/>'
+        }
+
+        if (kc.tokenParsed['name']) {
+            d += kc.tokenParsed['name'];
+        } else {
+            d += kc.tokenParsed['preferred_username'];
+        }
+
+        d += '</div>';
+
+        console.info(d);
+
+        output(d);
+    }
+
 
     kc.onAuthRefreshSuccess = function () {
-        event('Auth Refresh Success');
-    };
-
-    kc.onAuthRefreshError = function () {
-        event('Auth Refresh Error');
-    };
-
-    kc.onAuthLogout = function () {
-        event('Auth Logout');
-    };
-
-    kc.onTokenExpired = function () {
-        event('Access token expired.');
+        updateProfile();
     };
 
     // Flow can be changed to 'implicit' or 'hybrid', but then client must enable implicit flow in admin console too 
@@ -115,7 +116,11 @@
     };
 
     kc.init(initOptions).success(function(authenticated) {
-        event('Init Success (' + (authenticated ? 'Authenticated' : 'Not Authenticated') + ')');
+        if (!authenticated) {
+            output('Not authenticated');
+        } else {
+            updateProfile();
+        }
     }).error(function() {
         event('Init Error');
     });
