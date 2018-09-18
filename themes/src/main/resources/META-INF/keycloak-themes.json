@@ -1,0 +1,6 @@
+{
+    "themes": [{
+        "name" : "sunrise",
+        "types": [ "login" ]
+    }]
+}
