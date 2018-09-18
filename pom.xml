@@ -36,7 +36,7 @@
     </licenses>
 
     <properties>
-        <version.keycloak>4.4.0.Final</version.keycloak>
+        <version.keycloak>4.5.0.Final-SNAPSHOT</version.keycloak>
         <version.wildfly.maven.plugin>1.2.2.Final</version.wildfly.maven.plugin>
     </properties>
 

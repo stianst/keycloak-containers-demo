@@ -1,5 +1,10 @@
 FROM jboss/keycloak
 
-RUN /opt/jboss/keycloak/bin/add-user.sh admin admin --silent
+COPY magic-link/target/magic-link.jar /opt/jboss/keycloak/standalone/deployments/
+RUN touch /opt/jboss/keycloak/standalone/deployments/magic-link.jar.dodeploy
 
-CMD ["-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
+COPY themes/target/themes.jar /opt/jboss/keycloak/standalone/deployments/
+RUN touch /opt/jboss/keycloak/standalone/deployments/themes.jar.dodeploy
+
+COPY token-validation/target/token-validation.jar /opt/jboss/keycloak/standalone/deployments/
+RUN touch /opt/jboss/keycloak/standalone/deployments/token-validation.jar.dodeploy
