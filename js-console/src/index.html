@@ -88,14 +88,14 @@
     var updateProfile = function() {
         var d = '<div style="text-align: center;">';
 
-        if (kc.tokenParsed['avatar_url']) {
-            d += '<img src="' + kc.tokenParsed['avatar_url'] + '"></img><br/>'
+        if (kc.idTokenParsed['avatar_url']) {
+            d += '<img src="' + kc.idTokenParsed['avatar_url'] + '"></img><br/>'
         }
 
-        if (kc.tokenParsed['name']) {
-            d += kc.tokenParsed['name'];
+        if (kc.idTokenParsed['name']) {
+            d += kc.idTokenParsed['name'];
         } else {
-            d += kc.tokenParsed['preferred_username'];
+            d += kc.idTokenParsed['preferred_username'];
         }
 
         d += '</div>';
