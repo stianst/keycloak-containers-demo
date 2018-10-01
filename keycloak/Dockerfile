@@ -1,4 +1,4 @@
-FROM jboss/keycloak:master
+FROM jboss/keycloak:latest
 
 COPY magic-link/target/magic-link.jar /opt/jboss/keycloak/standalone/deployments/
 RUN touch /opt/jboss/keycloak/standalone/deployments/magic-link.jar.dodeploy
