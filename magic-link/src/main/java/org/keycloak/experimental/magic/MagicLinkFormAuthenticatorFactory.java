@@ -36,7 +36,7 @@ public class MagicLinkFormAuthenticatorFactory implements AuthenticatorFactory {
 
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
         AuthenticationExecutionModel.Requirement.REQUIRED,
-        AuthenticationExecutionModel.Requirement.OPTIONAL,
+        AuthenticationExecutionModel.Requirement.CONDITIONAL,
         AuthenticationExecutionModel.Requirement.DISABLED
     };
 

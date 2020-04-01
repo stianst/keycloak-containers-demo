@@ -14,7 +14,7 @@ reproduce most steps without Docker, but you need to adapt the steps accordingly
 
 To make it easy to connect Keycloak to LDAP create a user defined network:
 
-    docker network create devnation-network
+    docker network create demo-network
 
 ### Start Keycloak
 
@@ -27,12 +27,12 @@ First build the custom providers and themes with:
 
 Then build the image with:
     
-    docker build -t devnation-keycloak -f keycloak/Dockerfile .
+    docker build -t demo-keycloak -f keycloak/Dockerfile .
 
 Then run it with:
 
-    docker run --name devnation-keycloak -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin \
-        -p 8080:8080 --net devnation-network devnation-keycloak
+    docker run --name demo-keycloak -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin \
+        -p 8080:8080 --net demo-network demo-keycloak
 
 ### Start LDAP server
 
@@ -40,11 +40,17 @@ For the LDAP part of the demo we need an LDAP server running.
 
 First build the image with:
 
-    docker build -t devnation-ldap ldap
+    docker build -t demo-ldap ldap
     
 Then run it with:
 
-    docker run --name devnation-ldap --net devnation-network devnation-ldap
+    docker run --name demo-ldap --net demo-network demo-ldap
+    
+### Start mail server
+
+In order to allow Keycloak to send emails we need to configure an SMTP server.
+
+    docker run -d -p 8025:8025 --name demo-mail --net demo-network mailhog/mailhog
     
 ### Start JS Console application
 
@@ -52,11 +58,11 @@ The JS Console application provides a playground to play with tokens.
 
 First build the image with:
 
-    docker build -t devnation-js-console js-console
+    docker build -t demo-js-console js-console
     
 Then run it with:
 
-    docker run --name devnation-js-console -p 8000:80 devnation-js-console
+    docker run --name demo-js-console -p 8000:80 demo-js-console
 
 
 
@@ -80,9 +86,6 @@ Fill in the following values:
 
 ## Configuring SMTP server
 
-In order to allow Keycloak to send emails we need to configure an SMTP server.
-If you have a Google account you can use the Gmail SMTP server. 
-
 First lets set a email address on the admin user so we can test email delivery.
 From the drop-down in the top-left corner select `Master`. Go to `Users`, click
 on `View all users` and select the `admin` user. 
@@ -93,15 +96,10 @@ Now switch back to the `demo` realm, then click on `Realm Settings` then `Email`
 
 Fill in the following values:
 
-* Host: `smtp.gmail.com`
-* From: `<username>@gmail.com`
-* Enable SSL: `ON`
-* Enable StartTLS : `ON`
-* Enable Authentication: `ON`
-* Username: `<username>@gmail.com`
-* Password: `<password>`
+* Host: `demo-mail`
+* From: `<username>@localhost`
 
-Click `Save` and `Test connection`. Open your Gmail and check that you have
+Click `Save` and `Test connection`. Open your http://localhost:8025 and check that you have
 received an email from Keycloak.
 
 
@@ -142,7 +140,7 @@ Click `Add` followed by `Save`.
 Now Keycloak knows the users avatar, but the application also needs access to this. We're
 going to add this through Client Scopes.
 
-Click on `Client Scopes` then `Create`. Select `No template` and `Next`.
+Click on `Client Scopes` then `Create`.
 
 Fill in the following values:
 
@@ -207,7 +205,7 @@ Let's start by creating a role and see it in the token.
 
 Open the [Keycloak Admin Console](http://localhost:8080/auth/admin/). 
 
-Click on `Roles` and `Add Role`. Set the Role Name to `User` and click `Save.
+Click on `Roles` and `Add Role`. Set the Role Name to `user` and click `Save.
 
 Now click on `Users` and find the user you want to login with. Click on `Role Mappings`. 
 Select `user` from Available roles and click `Add selected`.
@@ -220,7 +218,7 @@ Click on `New` and use `mygroup` as the Name. Click on `Attributes` and add key 
 `consumers`.
 
 Now let's make sure this group and the claim is added to the token. Go to `Client Scopes` and click `Create`.
-Again select `No template`. For the name use `myscope`. Click on `Mappers`. Click on `Create`.
+For the name use `myscope`. Click on `Mappers`. Click on `Create`.
 
 Fill in the following values:
 
@@ -256,19 +254,16 @@ Fill in the following values:
 
 * Edit Mode: `WRITABLE`
 * Vendor: `other`
-* Connection URL: `ldap://devnation-ldap:389`
+* Connection URL: `ldap://demo-ldap:389`
 * Users DN: `ou=People,dc=example,dc=org`
 * Bind DN: `cn=admin,dc=example,dc=org`
 * Bind Credential: `admin`
+* Trust Email: `ON`
 
 Click on `Save` then click on `Synchronize all users`.
 
 Now go to `Users` and click `View all users`. You will see two new users `bwilson` and
 `jbrown`. Both these users have the password `password`.
-
-Neither of these users have verified their email and since you don't have access
-to their email you need to manually set the email verified by clicking on each
-user and turning on `Email Verified`.
 
 Try opening the [JS Console](http://localhost:8000) again and login with one of
 these users.
@@ -447,13 +442,14 @@ Open the [JS Console](http://localhost:8000) and click Logout. For the email ent
 address and click `Log In`. Open your email and you should have a mail with a link which will
 authenticate you and bring you to the JS Console.
 
-Now let's add OTP to the mix. Open the [Keycloak Admin Console](http://localhost:8080/auth/admin/).
-Go back to the `Browser-email` flow. Click `Actions` and `Add execution`. Select `OTP Form`. Then
-mark it as `Required`.
+Now let's add WebAuthn to the mix. Open the [Keycloak Admin Console](http://localhost:8080/auth/admin/).
+Go back to the `Browser-email` flow. Click `Actions` and `Add execution`. Select `WebAuthn Authenticator`. Then
+mark it as `Required`. You also need to register the WebAuthn required action. 
+
+Select `Required Actions`, `Register`, then select `WebAuthn Register` and click `Ok`. 
 
 Open the [JS Console](http://localhost:8000) and click Logout. Login again. After you've done the
-email based login you will be prompted to configure OTP. You'll need Google Authenticator or
-FreeOTP on your phone to try this out.
+email based login you will be prompted to configure WebAuthn. You'll need a WebAuthn security key to try this out.
 
 
 
