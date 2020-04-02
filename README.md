@@ -1,27 +1,24 @@
 # A deep dive into Keycloak
 
-This project contains the bits and pieces needed to run the DevNation session 
-A deep dive into Keycloak on your own.
+This project contains a DIY deep dive into Keycloak.
 
-To run this demo you need to have Docker installed. Alternatively, you can 
-reproduce most steps without Docker, but you need to adapt the steps accordingly.
-
+The steps included here requires Docker (or Podman). It should also be possible to replicate the steps without Docker by
+adapting the steps accordingly.
 
 
-## Setup
+## Start containers
 
 ### Create a user defined network
 
-To make it easy to connect Keycloak to LDAP create a user defined network:
+To make it easy to connect Keycloak to LDAP and the mail server create a user defined network:
 
     docker network create demo-network
 
 ### Start Keycloak
 
-There's an extended Keycloak image in this project to be able to remotely deploy
-themes and providers.
+We're going to use an extended Keycloak image that includes a custom theme and some custom providers.
 
-First build the custom providers and themes with:
+First, build the custom providers and themes with:
 
     mvn clean install
 
@@ -29,7 +26,7 @@ Then build the image with:
     
     docker build -t demo-keycloak -f keycloak/Dockerfile .
 
-Then run it with:
+Finally run it with:
 
     docker run --name demo-keycloak -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin \
         -p 8080:8080 --net demo-network demo-keycloak
@@ -48,13 +45,16 @@ Then run it with:
     
 ### Start mail server
 
-In order to allow Keycloak to send emails we need to configure an SMTP server.
+In order to allow Keycloak to send emails we need to configure an SMTP server. MailHog provides an excellent email
+server that can used for testing.
+
+Start the mail server with:
 
     docker run -d -p 8025:8025 --name demo-mail --net demo-network mailhog/mailhog
     
 ### Start JS Console application
 
-The JS Console application provides a playground to play with tokens.
+The JS Console application provides a playground to play with tokens issued by Keycloak.
 
 First build the image with:
 
@@ -68,41 +68,45 @@ Then run it with:
 
 ## Creating the realm
 
-Open [Keycloak Admin Console](http://localhost:8080/auth/admin/) and login with
+Open [Keycloak Admin Console](http://localhost:8080/auth/admin/). Login with
 username `admin` and password `admin`.
 
 Create a new realm called `demo` (find the `add realm` button in the drop-down
-in the top-left corner). Once created set a friendly Display name for the realm, for 
+in the top-left corner). 
+
+Once created set a friendly Display name for the realm, for 
 example `Demo SSO`.
+
+## Create a client
 
 Now create a client for the JS console by clicking on `clients` then `create`.
 
 Fill in the following values:
 
 * Client ID: `js-console`
-* Root URL: `http://localhost:8000`
+* Click `Save`
 
+On the next form fill in the following values:
 
+* Valid Redirect URIs: `http://localhost:8000/*`
+* Web Origins: `http://localhost:8000`
 
 ## Configuring SMTP server
 
 First lets set a email address on the admin user so we can test email delivery.
+
 From the drop-down in the top-left corner select `Master`. Go to `Users`, click
-on `View all users` and select the `admin` user. 
-Set the `Email` field to `<username>@gmail.com` (replace `<username>` with your
-Google username). 
+on `View all users` and select the `admin` user. Set the `Email` field to `admin@localhost`.
 
 Now switch back to the `demo` realm, then click on `Realm Settings` then `Email`. 
 
 Fill in the following values:
 
 * Host: `demo-mail`
-* From: `<username>@localhost`
+* From: `keycloak@localhost`
 
 Click `Save` and `Test connection`. Open your http://localhost:8025 and check that you have
 received an email from Keycloak.
-
-
 
 ## Enable user registration
 
@@ -118,12 +122,11 @@ Fill in the following values:
 * User registration: `ON`
 * Verify email: `ON`
 
-To try this out open the [JS Console](http://localhost:8000). You will be
-automatically redirected to the login screen. Click on `Register` 
+To try this out open the [JS Console](http://localhost:8000). 
+
+You will be automatically redirected to the login screen. Click on `Register` 
 and fill in the form. After registering you will be prompted to verify your email
 by clicking on a link in an email sent to your email address.
-
-
 
 ## Adding claims to the tokens
 
@@ -133,8 +136,11 @@ an avatar available for your users.
 Keycloak makes it possible to add custom attributes to users as well as adding custom
 claims to tokens.
 
-First open `Users` and select the user you registered earlier. Click on attributes and
-add key `avatar_url` with value `https://www.keycloak.org/resources/images/keycloak_logo_480x108.png`.
+First open `Users` and select the user you registered earlier. Click on attributes and the following attribute:
+
+* Key: `avatar_url`
+* Value: `https://www.keycloak.org/resources/images/keycloak_logo_480x108.png`
+
 Click `Add` followed by `Save`.
 
 Now Keycloak knows the users avatar, but the application also needs access to this. We're
@@ -147,9 +153,9 @@ Fill in the following values:
 * Name: `avatar`
 * Consent Screen Text: `Avatar`
 
-Click on `Save`. Click on `Mappers` then `Create`.
+Click on `Save`. 
 
-Fill in the following values:
+Click on `Mappers` then `Create`. Fill in the following values:
 
 * Name: `avatar`
 * Mapper Type: `User Attribute`
@@ -169,24 +175,20 @@ parameter.
 
 Now go back to the JS Console and click `Refresh`.
 
-
-
 ## Require consent for the application
 
 So far we've assumed the JS Console is an internal trusted application, but what if it's
-a third party external application? In that case we probably want the user to grant
-access to what the application wants to have access to.
+a third party application? In that case we probably want the user to grant access to what the application wants to have 
+access to.
 
 Open the [Keycloak Admin Console](http://localhost:8080/auth/admin/). 
 
-Go to `Clients`, select `JS Console` and turn on `Consent Required`. Go back to the 
-[JS Console](http://localhost:8000) and click `Login` again.
+Go to `Clients`, select `JS Console` and turn on `Consent Required`. 
 
-Now Keycloak will prompt the user to grant access to the application.
+Go back to the [JS Console](http://localhost:8000) and click `Login` again. Now Keycloak will prompt the user to grant 
+access to the application.
 
 You may want to turn this off again before continuing.
-
-
 
 # Roles and groups
 
@@ -205,7 +207,7 @@ Let's start by creating a role and see it in the token.
 
 Open the [Keycloak Admin Console](http://localhost:8080/auth/admin/). 
 
-Click on `Roles` and `Add Role`. Set the Role Name to `user` and click `Save.
+Click on `Roles` and `Add Role`. Set the Role Name to `user` and click `Save`.
 
 Now click on `Users` and find the user you want to login with. Click on `Role Mappings`. 
 Select `user` from Available roles and click `Add selected`.
@@ -214,11 +216,13 @@ Go back to the [JS Console](http://localhost:8000) and click `Refresh`, then `Ac
 Notice that there is a `realm_access` claim in the token that now contains the user role.
 
 Next let's create a Group. Go back to the [Keycloak Admin Console](http://localhost:8080/auth/admin/).
-Click on `New` and use `mygroup` as the Name. Click on `Attributes` and add key `user_type` with value
-`consumers`.
+
+Click on `New` and use `mygroup` as the Name. Click on `Attributes` and add key `user_type` with value `consumers`.
 
 Now let's make sure this group and the claim is added to the token. Go to `Client Scopes` and click `Create`.
-For the name use `myscope`. Click on `Mappers`. Click on `Create`.
+For the name use `myscope`. 
+
+Click on `Mappers`. Click on `Create`.
 
 Fill in the following values:
 
@@ -240,8 +244,6 @@ Find the `js-console` client again and add the `myclaim` as a default client sco
 
 Go back to the [JS Console](http://localhost:8000) and click `Refresh`, then `Access Token JSON`.
 Notice that there is a `groups` claim in the token as well as a `user_type` claim.
-
-
 
 ## Users from LDAP
 
@@ -267,8 +269,6 @@ Now go to `Users` and click `View all users`. You will see two new users `bwilso
 
 Try opening the [JS Console](http://localhost:8000) again and login with one of
 these users.
-
-
 
 ## Users from GitHub
 
@@ -308,8 +308,6 @@ a username or password click on `GitHub`.
 
 Notice how it automatically knows your name and also has your avatar.
 
-
-
 ## Style that login
 
 Perhaps you don't want the login screen to look like a Keycloak login screen, but rather 
@@ -327,8 +325,6 @@ Try opening the [JS Console](http://localhost:8000) to login a take in the beaut
 new login screen!
 
 You may want to change it back before you continue ;).
-
-
 
 ## Keys and Signing Algorithms
 
@@ -383,8 +379,6 @@ What this does is provide a seamless way of changing signatures and keys. Curren
 will receive new tokens and cookies over time and after a while you can safely remove the old keys
 without affecting any logged-in users.
 
-
-
 ## Sessions
 
 Make sure you have the [JS Console](http://localhost:8000) open in a tab and you're logged-in.
@@ -397,8 +391,6 @@ now longer authenticated.
 
 Not only can admins log out users, but users themselves can logout other sessions from the
 account management console.
-
-
 
 ## Events
 
@@ -415,8 +407,6 @@ Not only can Keycloak save these events to be able to display them in the admin 
 and account management console, but you can develop your own event listener that can
 do what you want with the events.
 
-
-
 # Custom stuff
 
 Keycloak has a huge number of SPIs that allow you to develop your own custom providers.
@@ -429,13 +419,14 @@ users to login through `email`.
 To enable this open the [Keycloak Admin Console](http://localhost:8080/auth/admin/). 
 Click on `Authentication`.
 
-Click on `Copy` to create a new flow based on the `browser` flow. Use the name `browser-email`.
+Click on `Copy` to create a new flow based on the `browser` flow. Use the name `My Browser Flow`.
+
 Click on `Actions` and `Delete` for `Username Password Form` and `OTP Form`.
 
 Click on `Actions` next to `Browser-email forms`. Then click on `Add execution`.
 Select `Magic Link` from the list. Once it's saved select `Required` for the `Magic Link`.
 
-Now to use this new flow when users login select `Bindings` and select `browser-email` for the
+Now to use this new flow when users login select `Bindings` and select `My Browser Flow` for the
 `Browser flow`.
 
 Open the [JS Console](http://localhost:8000) and click Logout. For the email enter your email
@@ -450,8 +441,6 @@ Select `Required Actions`, `Register`, then select `WebAuthn Register` and click
 
 Open the [JS Console](http://localhost:8000) and click Logout. Login again. After you've done the
 email based login you will be prompted to configure WebAuthn. You'll need a WebAuthn security key to try this out.
-
-
 
 ## Cool stuff we didn't cover!
 
