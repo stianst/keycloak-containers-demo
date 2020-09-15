@@ -103,6 +103,7 @@ Now switch back to the `demo` realm, then click on `Realm Settings` then `Email`
 Fill in the following values:
 
 * Host: `demo-mail`
+* Port: `1025`
 * From: `keycloak@localhost`
 
 Click `Save` and `Test connection`. Open your http://localhost:8025 and check that you have
