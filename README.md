@@ -103,6 +103,7 @@ Now switch back to the `demo` realm, then click on `Realm Settings` then `Email`
 Fill in the following values:
 
 * Host: `demo-mail`
+  Port: `1025`
 * From: `keycloak@localhost`
 
 Click `Save` and `Test connection`. Open your http://localhost:8025 and check that you have
@@ -240,7 +241,7 @@ Fill in the following values:
 * Token Claim Name: `user_type`
 * Claim JSON Type: `String`
 
-Find the `js-console` client again and add the `myclaim` as a default client scope.
+Find the `js-console` client again and add the `myscope` as a default client scope.
 
 Go back to the [JS Console](http://localhost:8000) and click `Refresh`, then `Access Token JSON`.
 Notice that there is a `groups` claim in the token as well as a `user_type` claim.
