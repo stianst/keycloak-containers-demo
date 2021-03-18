@@ -5,8 +5,27 @@ This project contains a DIY deep dive into Keycloak.
 The steps included here requires Docker (or Podman). It should also be possible to replicate the steps without Docker by
 adapting the steps accordingly.
 
+## Quick setup (docker-compose)
 
-## Start containers
+For an initial setup, a maven build of the custom providers and themes is required first:
+
+    mvn clean install
+
+Once this is done, the demo infrastructure can be built and started with a single command:
+
+    docker-compose up -d
+
+The infrastructure is shut down with
+
+    docker-compose down
+
+Note that all services are ephemeral. Hence, the next 'docker-compose up' will start a
+new, pristine environment.
+
+## Manual setup (docker)
+
+The demo infrastructure can also be set up manually, without resorting to docker-compose, as
+follows.
 
 ### Create a user defined network
 

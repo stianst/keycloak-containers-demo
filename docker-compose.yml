@@ -1,0 +1,39 @@
+---
+version: "3.4"
+
+services:
+  demo-keycloak:
+    build:
+      context: .
+      dockerfile: keycloak/Dockerfile
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    image: demo-keycloak
+    networks:
+    - demo-network
+    ports:
+    - "8080:8080"
+  demo-ldap:
+    build:
+      context: ldap
+    image: demo-ldap
+    networks:
+    - demo-network
+  demo-mail:
+    image: mailhog/mailhog
+    ports:
+    - "8025:8025"
+    networks:
+    - demo-network
+  demo-js-console:
+    build:
+      context: js-console
+    image: demo-js-console
+    ports:
+    - "8000:80"
+    networks:
+    - demo-network
+
+networks:
+  demo-network: {}
