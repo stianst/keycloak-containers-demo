@@ -7,11 +7,7 @@ adapting the steps accordingly.
 
 ## Quick setup (docker-compose)
 
-For an initial setup, a maven build of the custom providers and themes is required first:
-
-    mvn clean install
-
-Once this is done, the demo infrastructure can be built and started with a single command:
+The demo infrastructure can be built and started with a single command:
 
     docker-compose up -d
 
@@ -37,15 +33,11 @@ To make it easy to connect Keycloak to LDAP and the mail server create a user de
 
 We're going to use an extended Keycloak image that includes a custom theme and some custom providers.
 
-First, build the custom providers and themes with:
-
-    mvn clean install
-
-Then build the image with:
+Build the image with:
     
     docker build -t demo-keycloak -f keycloak/Dockerfile .
 
-Finally run it with:
+This will build and include some custom providers and themes as well. Run the image with:
 
     docker run --name demo-keycloak -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin \
         -p 8080:8080 --net demo-network demo-keycloak
