@@ -5,8 +5,23 @@ This project contains a DIY deep dive into Keycloak.
 The steps included here requires Docker (or Podman). It should also be possible to replicate the steps without Docker by
 adapting the steps accordingly.
 
+## Quick setup (docker-compose)
 
-## Start containers
+The demo infrastructure can be built and started with a single command:
+
+    docker-compose up -d
+
+The infrastructure is shut down with
+
+    docker-compose down
+
+Note that all services are ephemeral. Hence, the next 'docker-compose up' will start a
+new, pristine environment.
+
+## Manual setup (docker)
+
+The demo infrastructure can also be set up manually, without resorting to docker-compose, as
+follows.
 
 ### Create a user defined network
 
@@ -18,15 +33,11 @@ To make it easy to connect Keycloak to LDAP and the mail server create a user de
 
 We're going to use an extended Keycloak image that includes a custom theme and some custom providers.
 
-First, build the custom providers and themes with:
-
-    mvn clean install
-
-Then build the image with:
+Build the image with:
     
     docker build -t demo-keycloak -f keycloak/Dockerfile .
 
-Finally run it with:
+This will build and include some custom providers and themes as well. Run the image with:
 
     docker run --name demo-keycloak -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin \
         -p 8080:8080 --net demo-network demo-keycloak
