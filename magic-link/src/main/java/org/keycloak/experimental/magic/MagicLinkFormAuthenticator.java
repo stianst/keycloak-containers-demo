@@ -72,8 +72,8 @@ public class MagicLinkFormAuthenticator extends AbstractUsernameFormAuthenticato
     public void authenticate(AuthenticationFlowContext context) {
         String sessionKey = context.getAuthenticationSession().getAuthNote("email-key");
         if (sessionKey != null) {
-            String requestKey = context.getHttpRequest().getUri().getQueryParameters().getFirst("key");
-            if (requestKey != null) {
+          String requestKey = context.getUriInfo().getQueryParameters().getFirst("key");
+          if (requestKey != null) {
                 if (requestKey.equals(sessionKey)) {
                     context.success();
                 } else {
