@@ -6,7 +6,10 @@
         ${msg("loginTitleHtml",(realm.displayNameHtml!''))?no_esc}
     <#elseif section = "form">
         <#if realm.password>
-            View email
+        <div>
+            Please, read your email inbox and follow the instruction
+        </div>
+            ${auth.attemptedUsername}
         </#if>
     </#if>
 </@layout.registrationLayout>
